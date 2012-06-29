@@ -35,7 +35,7 @@ body {
   width:0px; height:0px; margin: 0; padding: 0;
 }
 
-#newbtn, #openbtn, #savebtn, #presbtn, #loginbtn {
+#newbtn, #openbtn, #savebtn, #presbtn, #helpbtn, #loginbtn {
   position: relative;
   bottom: 3px;
   border: 1px solid #777777;
@@ -45,13 +45,13 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-#newbtn:hover[disabled=false], #openbtn:hover, #savebtn:hover, #presbtn:hover, #loginbtn:hover {
+#newbtn:hover[disabled=false], #openbtn:hover, #savebtn:hover, #presbtn:hover, #helpbtn:hover, #loginbtn:hover {
   color: white;
   border: 1px solid #222280;
   background: #3069B6;
 }
 
-#openbtn, #presbtn {
+#openbtn, #presbtn, #helpbtn {
   margin-left: 20px;
 }
 
@@ -208,7 +208,7 @@ body {
   line-height: 24px;
   padding: 0 15px;
   background-color: white;
-  overflow: auto;
+  overflow: hidden;
 }
 
 #loading {
@@ -227,13 +227,47 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+#dlgfinfo {
+  height: 25px;
+  padding: 4px 0 1px 4px;
+  margin-top: 15px;
+  border: 1px solid #CCC;
+  line-height: 25px;
+  font-weight: bold;
+  background-color: #EDF5FF;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+#dlginside {
+  margin: 0 10px;
+  font-weight: 500;
+  font-family: Georgia, "Times New Roman", Times, serif;
+}
+
+#dlgwalkup {
+  float: right;
+  margin-right: 4px;
+}
+
+#dlgflist {
+  height: 235px;
+  margin-bottom: 15px;
+  padding: 0;
+  padding-right: 0px;
+  overflow: auto;
+}
+
 #dlgbody table {
   width: 100%;
-  margin: 16px 0;
+  margin-right: 2px;
 }
 
 #dlgbody th {
   text-align: left;
+}
+
+#dlgbody th, #dlgbody td {
+  padding-left: 4px;
 }
 
 #dlgbody .finfo {
@@ -248,11 +282,37 @@ body {
   background-color: #FFF;
 }
 
+#dlgbody .fsize, #dlgbody .ftime {
+  text-align: right;
+  padding-right: 4px;
+}
+
 #dlgbody table, #dlgbody tr, #dlgbody th, #dlgbody td
 {
   border-color: #DCDCDC;
 }
 
-#dlgclose {
+#dlgbtns {
   float: right;
+}
+
+#savespan {
+  margin-right: 10px;
+}
+
+#savename {
+  text-align: right;
+}
+
+#dlgsave, #dlgclose {
+  border: 1px solid #777777;
+  background: #E0E0E0;
+  border-radius: 2px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+#dlgsave:hover, #dlgclose:hover {
+  color: white;
+  border: 1px solid #222280;
+  background: #3069B6;
 }

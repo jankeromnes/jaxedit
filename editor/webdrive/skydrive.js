@@ -2,46 +2,44 @@
 // Copyright (c) 2012 JaxEdit Project
 
 var skydrive = {
+  finside: [],
   homeid: null,
+  status: null,
 
   initDrive: function() {
-    var cid, url;
+    var cid, url = location.protocol + '//' + location.host + location.pathname;
     switch(location.hostname) {
       case "jaxedit.sourceforge.net":
         cid = "000000004C0BD522";
-        url = "http://jaxedit.sourceforge.net/";
         break;
       case "jaxedit.com":
         cid = "000000004C0BD523";
-        url = "http://jaxedit.com/";
         break;
       case "www.jaxedit.com":
         cid = "000000004C0BD524";
-        url = "http://www.jaxedit.com/";
         break;
       case "zohooo.github.com":
         cid = "000000004C0BDA05";
-        url = "http://zohooo.github.com/jaxedit/";
         break;
       case "jaxedit.googlecode.com":
         cid = "00000000400A3032";
-        url = "http://jaxedit.googlecode.com/svn/trunk/jaxedit/";
         break;
     }
-
-    WL.init({
-      client_id: cid,
-      redirect_uri: url + "editor/skydrive.htm",
-      scope: ["wl.signin", "wl.skydrive", "wl.skydrive_update"],
-      response_type: "token",
-      logging: true
-    });
 
     WL.Event.subscribe("auth.login", this.onLoginComplete);
     WL.Event.subscribe("auth.logout", this.onLogoutComplete);
     WL.Event.subscribe("auth.sessionChange", this.onSessionChange);
     WL.Event.subscribe("auth.statusChange", this.onStatusChange);
     WL.Event.subscribe("wl.log", this.onErrorOccur);
+
+    WL.init({
+      client_id: cid,
+      redirect_uri: url + "editor/webdrive/skydrive.htm",
+      scope: ["wl.signin", "wl.skydrive", "wl.skydrive_update"],
+      response_type: "token",
+      status: true,
+      logging: true
+    });
   },
 
   signUserIn: function() {
@@ -53,11 +51,10 @@ var skydrive = {
   },
 
   signUserInOut: function() {
-    var el = document.getElementById("loginbtn");
-    if (el.value == "Login") {
-      WL.login();
-    } else {
+    if (skydrive.status == "connected") {
       WL.logout();
+    } else {
+      WL.login();
     }
   },
   
@@ -76,7 +73,7 @@ var skydrive = {
     });
   },
 
-  getFoldersList: function() {
+  findMainFolder: function() {
     WL.api(
     {
       path: "/me/skydrive/files",
@@ -88,8 +85,9 @@ var skydrive = {
         for (var i = 0; i < response.data.length; i++) {
           data = response.data[i];
           console.log(data.type, data.name);
-          if (data.type == "folder" && data.name == "jaxedit") {
+          if (data.type == "folder" && data.name == "JaxEdit") {
             exist = true;
+            skydrive.finside.push({fid: data.id, name: "JaxEdit"});
             skydrive.homeid = data.id;
             console.log("skydrive: homeid = ", data.id);
             break;
@@ -109,11 +107,12 @@ var skydrive = {
       path: "me/skydrive",
       method: "POST",
       body: {
-        name: "jaxedit"
+        name: "JaxEdit"
       }
     },
     function(response){
       if (!response.error) {
+        skydrive.finside.push({fid: response.id, name: "JaxEdit"});
         skydrive.homeid = response.id;
         console.log("skydrive: homeid = ", response.id);
       } else {
@@ -122,7 +121,8 @@ var skydrive = {
     });
   },
 
-  getFilesList: function(fid, callback) {
+  getFilesList: function(callback) {
+    var fid = skydrive.finside[skydrive.finside.length - 1].fid;
     console.log("skydrive: getFilesList with fid = ", fid);
     WL.api(
     {
@@ -131,14 +131,6 @@ var skydrive = {
     }, callback);
   },
 
-  getFileUrl: function(fid, callback) {
-    WL.api(
-    {
-      path: fid + "/content",//?suppress_redirects=true",
-      method: "GET"
-    }, callback);
-  },
-  
   onLoginComplete: function() {
     var session = WL.getSession();
     if (session.error) {
@@ -146,32 +138,38 @@ var skydrive = {
     }
     else {
       alert("You have been logged into SkyDrive.");
-      skydrive.getFoldersList();
+      skydrive.access_token = session.access_token;
+      skydrive.homeid = null;
+      skydrive.finside = [];
+      skydrive.findMainFolder();
+      jaxedit.changeStatus("connected");
     }
   },
 
   onLogoutComplete: function() {
     alert("You have been logged out of SkyDrive.");
+    jaxedit.changeStatus("notConnected");
+    skydrive.homeid = null;
+    skydrive.finside = [];
   },
 
   onSessionChange: function() {
     var session = WL.getSession();
     if (session) {
-      console.log("Your session has changed.");
+      skydrive.access_token = session.access_token;
+      console.log("skydrive: your session has changed.");
     }
   },
 
   onStatusChange: function() {
     WL.getLoginStatus(function(response) {
-      if (response.status == "connected") {
-        jaxedit.changeLoginButton("Logout");
-      } else {
-        jaxedit.changeLoginButton("Login");
-      };
+      skydrive.status = response.status;
+      jaxedit.changeStatus(response.status);
+      console.log("skydrive: your status has changed.");
     });
   },
 
   onErrorOccur: function() {
-    alert("Error in Skydrive!");
+    console.log("skydrive: error in skydrive!");
   }
 };
